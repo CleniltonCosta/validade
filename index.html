@@ -53,6 +53,14 @@
         .warning {
             background-color: #ffcccb;
         }
+        #notification {
+            background-color: #ffeb3b;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #f0c30f;
+            color: #856404;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -65,10 +73,12 @@
             <input type="text" id="product-name" name="product-name" required><br><br>
 
             <label for="expiration-date">Data de Validade:</label><br>
-            <input type="text" id="expiration-date" name="expiration-date" placeholder="DD-MM-YYYY" required><br><br>
+            <input type="date" id="expiration-date" name="expiration-date" required><br><br>
 
             <button type="submit">Adicionar Produto</button>
         </form>
+
+        <div id="notification"></div>
 
         <table>
             <thead>
@@ -87,10 +97,10 @@
     <script>
         const form = document.getElementById('product-form');
         const productTable = document.getElementById('product-table');
+        const notification = document.getElementById('notification');
 
         function parseDate(dateStr) {
-            const [day, month, year] = dateStr.split('-').map(Number);
-            return new Date(year, month - 1, day);
+            return new Date(dateStr);
         }
 
         function formatDate(date) {
@@ -109,6 +119,22 @@
             return data ? JSON.parse(data) : [];
         }
 
+        function checkNotifications(products) {
+            const today = new Date();
+            const warningProducts = products.filter(product => {
+                const expiration = parseDate(product.expirationDate);
+                const diffTime = Math.ceil((expiration - today) / (1000 * 60 * 60 * 24));
+                return diffTime <= 15;
+            });
+
+            if (warningProducts.length > 0) {
+                notification.style.display = 'block';
+                notification.textContent = `Atenção! ${warningProducts.length} produto(s) estão próximos do vencimento.`;
+            } else {
+                notification.style.display = 'none';
+            }
+        }
+
         function renderTable(products) {
             productTable.innerHTML = '';
             products.forEach((product, index) => {
@@ -121,7 +147,7 @@
 
                 row.innerHTML = `
                     <td>${product.name}</td>
-                    <td>${product.expirationDate}</td>
+                    <td>${formatDate(expiration)}</td>
                     <td class="actions">
                         <button onclick="editProduct(${index})">Editar</button>
                         <button onclick="deleteProduct(${index})">Excluir</button>
@@ -130,6 +156,7 @@
 
                 productTable.appendChild(row);
             });
+            checkNotifications(products);
         }
 
         function addProduct(product) {
@@ -144,7 +171,7 @@
             const product = products[index];
 
             const newName = prompt('Editar nome do produto:', product.name);
-            const newDate = prompt('Editar data de validade (DD-MM-YYYY):', product.expirationDate);
+            const newDate = prompt('Editar data de validade (YYYY-MM-DD):', product.expirationDate);
 
             if (newName) product.name = newName;
             if (newDate) product.expirationDate = newDate;
