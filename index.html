@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Validade de Produtos</title>
+    
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-analytics.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+      
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+          apiKey: "AIzaSyDKCPWLgOhJ30VCtTR-KQIZZkKinterzy8",
+          authDomain: "validade-8dd8d.firebaseapp.com",
+          projectId: "validade-8dd8d",
+          storageBucket: "validade-8dd8d.firebasestorage.app",
+          messagingSenderId: "683109129784",
+          appId: "1:683109129784:web:cbb04623a73817af5b10cd",
+          measurementId: "G-MD9CW12DCW"
+        };
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+      </script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        main {
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+        .actions button {
+            padding: 5px 10px;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .actions button:hover {
+            background-color: #0056b3;
+        }
+        .warning {
+            background-color: #ffcccb;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Controle de Validade de Produtos</h1>
+    </header>
+    <main>
+        <form id="product-form">
+            <label for="product-name">Nome do Produto:</label><br>
+            <input type="text" id="product-name" name="product-name" required><br><br>
+
+            <label for="expiration-date">Data de Validade:</label><br>
+            <input type="date" id="expiration-date" name="expiration-date" required><br><br>
+
+            <button type="submit">Adicionar Produto</button>
+        </form>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome do Produto</th>
+                    <th>Data de Validade</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="product-table">
+                <!-- Linhas de produtos serão adicionadas aqui dinamicamente -->
+            </tbody>
+        </table>
+    </main>
+
+    <script>
+        const form = document.getElementById('product-form');
+        const productTable = document.getElementById('product-table');
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const productName = document.getElementById('product-name').value;
+            const expirationDate = document.getElementById('expiration-date').value;
+            const today = new Date();
+            const expiration = new Date(expirationDate);
+
+            const diffTime = Math.ceil((expiration - today) / (1000 * 60 * 60 * 24));
+
+            const row = document.createElement('tr');
+            row.classList.toggle('warning', diffTime <= 15);
+
+            row.innerHTML = `
+                <td>${productName}</td>
+                <td>${expirationDate}</td>
+                <td class="actions">
+                    <button onclick="editProduct(this)">Editar</button>
+                    <button onclick="deleteProduct(this)">Excluir</button>
+                </td>
+            `;
+
+            productTable.appendChild(row);
+
+            form.reset();
+        });
+
+        function editProduct(button) {
+            const row = button.parentElement.parentElement;
+            const nameCell = row.children[0];
+            const dateCell = row.children[1];
+
+            const newName = prompt('Editar nome do produto:', nameCell.textContent);
+            const newDate = prompt('Editar data de validade (YYYY-MM-DD):', dateCell.textContent);
+
+            if (newName) nameCell.textContent = newName;
+            if (newDate) {
+                const today = new Date();
+                const expiration = new Date(newDate);
+                const diffTime = Math.ceil((expiration - today) / (1000 * 60 * 60 * 24));
+                row.classList.toggle('warning', diffTime <= 15);
+                dateCell.textContent = newDate;
+            }
+        }
+
+        function deleteProduct(button) {
+            const row = button.parentElement.parentElement;
+            row.remove();
+        }
+    </script>
+    
+    
+    
+
+</body>
+</html>
